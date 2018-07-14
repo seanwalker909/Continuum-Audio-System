@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<input class="pan-control" type="range" min="0" max=".99999" step=".0015" value="0" oninput="updateSlider(this.value)">
+<span class="gain-value">0</span>
+<button onclick="addSound()">play</button>
+<input type="text" name="position" value=0>
+
+<script src="/bower_components/osc.js/dist/osc-browser.min.js"></script>
+<script src="/bower_components/flocking/dist/flocking-all.min.js"></script>
+<script src="/myStuff.js"></script>
+
+<script>
+  var panControl = document.querySelector('.pan-control');
+  var panValue = document.querySelector('.gain-value');
+  panValue = panControl.value;
+
+
+  const context = new AudioContext();
+
+  var channelCount = context.destination.maxChannelCount;
+  context.destination.channelCount = channelCount;
+  context.destination.channelCountMode = 'explicit';
+  context.destination.channelInterpretation = 'discrete';
+  console.log("channelCount: " + channelCount);
+  context.audioWorklet.addModule('panX.js').then(() => {
+    let oscillator = new OscillatorNode(context);
+    oscillator.type = "sawtooth";
+    let panX = new AudioWorkletNode(context, 'panX', {
+      channelCount: channelCount,
+      channelCountMode: 'explicit',
+      channelInterpretation: 'discrete',
+    });
+    
+    //master gain node to controll overall volume
+    let gainNode = new GainNode(context);
+    gainNode.gain.value = .07;
+
+    //channel merger to connect dynamically added sounds
+    let merger = context.createChannelMerger(channelCount);
+
+    oscillator.connect(panX).connect(gainNode).connect(context.destination);
+    oscillator.start();
+    let pan = panX.parameters.get('gain');
+    updateSlider = function (value) {
+      pan.setTargetAtTime(value, context.currentTime, .015);
+    }
+
+    //osc
+    var oscPort = new osc.WebSocketPort({
+      url: "ws://localhost:8081", // URL to your Web Socket server.
+      metadata: true
+    });
+    oscPort.open();
+    oscPort.on("message", function (oscMsg) {
+      console.log("An OSC message just arrived!", oscMsg.args[0].value);
+      pan.setTargetAtTime(oscMsg.args[0].value, context.currentTime, .015);
+    });
+
+    addSound = function () {
+      myStuff.play();
+    }
+    
+  }); //promise
+</script>
+
+</html>
