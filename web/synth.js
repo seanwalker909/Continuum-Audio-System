@@ -6,12 +6,12 @@
 
     // Define a unique global namespace for your stuff.
     // You should change this to a namespace that is appropriate for your project.
-    fluid.registerNamespace("myStuff");
+    fluid.registerNamespace("sounds");
 
     var environment = flock.init();
 
     // Expose any public functions or constructors as properties on your namesapce.
-    myStuff.play = function () {
+    sounds.playSynth = function () {
         var mySynth = flock.synth({
             synthDef: {
                 ugen: "flock.ugen.sin",
@@ -24,6 +24,29 @@
                 mul: 0.1
             }
         });
+
+
+        sounds.playAudioFile = function () {
+            var synth = flock.synth({
+                synthDef: {
+                    ugen: "flock.ugen.playBuffer",
+                    buffer: {
+                        id: "chord",
+                        url: "./hillier-first-chord.wav"
+                    },
+
+
+
+                    loop: 1,
+
+                    start: 0,
+
+
+                }
+            });
+        };
+
+
 
         // If you're on iOS, you will need to call in a listener for
         // some kind of user input action, such a button click or touch handler.

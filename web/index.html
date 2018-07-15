@@ -3,12 +3,13 @@
 
 <input class="pan-control" type="range" min="0" max=".99999" step=".0015" value="0" oninput="updateSlider(this.value)">
 <span class="gain-value">0</span>
-<button onclick="addSound()">play</button>
+<button onclick="playSynth()">play synth</button>
+<button onclick="playAudioFile()">play audio file</button>
 <input type="text" name="position" value=0>
 
 <script src="/bower_components/osc.js/dist/osc-browser.min.js"></script>
 <script src="/bower_components/flocking/dist/flocking-all.min.js"></script>
-<script src="/myStuff.js"></script>
+<script src="/synth.js"></script>
 
 <script>
   var panControl = document.querySelector('.pan-control');
@@ -57,8 +58,12 @@
       pan.setTargetAtTime(oscMsg.args[0].value, context.currentTime, .015);
     });
 
-    addSound = function () {
-      myStuff.play();
+    playSynth = function () {
+      sounds.playSynth();
+    }
+
+    playAudioFile = function() {
+      sounds.playAudioFile();
     }
     
   }); //promise
