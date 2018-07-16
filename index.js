@@ -37,7 +37,7 @@ udpPort.on("ready", function () {
 
 udpPort.open();
 
-// Create an Express-based Web Socket server to which OSC messages will be relayed.
+// Create an Express-based Web Socket server to which messages will be relayed.
 var appResources = __dirname + "/web",
     app = express(),
     server = app.listen(8081),
