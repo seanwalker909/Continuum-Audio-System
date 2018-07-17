@@ -2,7 +2,11 @@
     "use strict";
     fluid.registerNamespace("sounds");
 
-    var environment = flock.init();
+    var environment = flock.init({
+        chans: 16,
+        outputs: 16
+    });
+
     environment.start();
 
     sounds.playSynth = function () {
@@ -67,7 +71,7 @@
                 source: {
                     ugen: "flock.ugen.sinOsc",
                     freq: 440,
-                    mul: 0.25
+                    mul: 0.03
                 }
             }
         });

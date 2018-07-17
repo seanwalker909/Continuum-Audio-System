@@ -34675,20 +34675,30 @@ var fluid = fluid || require("infusion"),
         that.gen = function (numSamps) {
             var m = that.model,
                 outputs = that.output,
-                left = outputs[0],
-                right = outputs[1],
                 inputs = that.inputs,
                 source = inputs.source.output,
                 pan = inputs.pan.output,
                 i,
                 j,
                 sourceVal,
-                panVal;
+				panVal;
+			var rangePerSpeaker = 1.0 / outputs.length;
+			var speaker = Math.floor(pan[0] / rangePerSpeaker);
+			var nextSpeaker = speaker + 1;
+			if (nextSpeaker == inputs.length) { //last speaker, sound does not 'wrap.'
+			  	nextSpeaker = 0;
+			}
+			// console.log("speaker: " + speaker);
+			// console.log("nextSpeaker: " + nextSpeaker);
+			
+			var left = outputs[speaker];
+            var right = outputs[nextSpeaker];
+			// let pan = gain[0] % rangePerSpeaker;
+			// pan = pan / rangePerSpeaker;
 
             for (i = 0, j = 0; i < numSamps; i++, j += m.strides.pan) {
                 sourceVal = source[i];
                 panVal = pan[j] * 0.5 + 0.5;
-
                 // TODO: Replace this with a lookup table.
                 right[i] = sourceVal * Math.sin(panVal * flock.HALFPI);
                 left[i] = sourceVal * Math.cos(panVal * flock.HALFPI);
@@ -34702,7 +34712,7 @@ var fluid = fluid || require("infusion"),
 
         that.init = function () {
             that.onInputChanged();
-            that.model.unscaledValue = that.model.value;
+			that.model.unscaledValue = that.model.value;
         };
 
         that.init();
@@ -34726,7 +34736,7 @@ var fluid = fluid || require("infusion"),
             strideInputs: [
                 "pan"
             ],
-            numOutputs: 2
+            numOutputs: 16
         }
     });
 

@@ -6,11 +6,12 @@
 <button onclick="playSynth()">play synth</button>
 <button onclick="playAudioFile()">play audio file</button>
 <button onclick="pan2()">pan2</button>
+<button onclick="changePan()">changePan</button>
 
 <input type="text" name="position" value=0>
 
 <script src="/bower_components/osc.js/dist/osc-browser.min.js"></script>
-<script src="/bower_components/flocking/dist/flocking-all.min.js"></script>
+<script src="/bower_components/flocking/dist/flocking-all.js"></script>
 <script src="/sounds.js"></script>
 
 <script>
@@ -76,7 +77,11 @@
     }
 
     pan2 = function () {
-      sounds.pan2(1);
+      var pan = sounds.pan2(.5);
+    }
+
+    changePan = function () {
+
     }
 
   }); //promise
