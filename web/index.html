@@ -5,13 +5,21 @@
 <span class="gain-value">0</span>
 <button onclick="playSynth()">play synth</button>
 <button onclick="playAudioFile()">play audio file</button>
+<button onclick="pan2()">pan2</button>
+
 <input type="text" name="position" value=0>
 
 <script src="/bower_components/osc.js/dist/osc-browser.min.js"></script>
 <script src="/bower_components/flocking/dist/flocking-all.min.js"></script>
-<script src="/synth.js"></script>
+<script src="/sounds.js"></script>
 
 <script>
+
+  //TODO
+  //have osc message start and trigger sounds
+
+  //interpolate flocking and panX
+
   var panControl = document.querySelector('.pan-control');
   var panValue = document.querySelector('.gain-value');
   panValue = panControl.value;
@@ -32,7 +40,7 @@
       channelCountMode: 'explicit',
       channelInterpretation: 'discrete',
     });
-    
+
     //master gain node to controll overall volume
     let gainNode = new GainNode(context);
     gainNode.gain.value = .07;
@@ -63,10 +71,14 @@
       sounds.playSynth();
     }
 
-    playAudioFile = function() {
+    playAudioFile = function () {
       sounds.playAudioFile();
     }
-    
+
+    pan2 = function () {
+      sounds.pan2(1);
+    }
+
   }); //promise
 </script>
 
