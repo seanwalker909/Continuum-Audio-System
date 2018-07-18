@@ -3,8 +3,8 @@
     fluid.registerNamespace("sounds");
 
     var environment = flock.init({
-        chans: 16,
-        outputs: 16
+        chans: 2,
+        outputs: 2
     });
 
     environment.start();
@@ -62,20 +62,18 @@
         });
     };
 
-    sounds.pan2 = function (panVal) {
-        var synth = flock.synth({
-            synthDef: {
-                id: "pan2",
-                ugen: "flock.ugen.pan2",
-                pan: panVal,
-                source: {
-                    ugen: "flock.ugen.sinOsc",
-                    freq: 440,
-                    mul: 0.03
-                }
-            }
-        });
-    };
+        // var pan2 = flock.synth({
+        //     synthDef: {
+        //         id: "pan2",
+        //         ugen: "flock.ugen.pan2",
+        //         pan: .5,
+        //         source: {
+        //             ugen: "flock.ugen.sinOsc",
+        //             freq: 440,
+        //             mul: 0.03
+        //         }
+        //     }
+        // });
 
 
 
