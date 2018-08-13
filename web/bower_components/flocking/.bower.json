@@ -22,11 +22,11 @@
     "package.json"
   ],
   "homepage": "https://github.com/colinbdclark/flocking",
-  "_release": "1a5ae7d7a6",
+  "_release": "eb36392acf",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "1a5ae7d7a6846ba5a98665e141867ffcd2a510b2"
+    "commit": "eb36392acf4ceea9d5f5a3e2348eefe55ccbcb54"
   },
   "_source": "https://github.com/colinbdclark/flocking.git",
   "_target": "master",

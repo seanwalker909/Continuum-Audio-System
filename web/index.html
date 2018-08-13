@@ -33,9 +33,11 @@
   context.destination.channelCountMode = 'explicit';
   context.destination.channelInterpretation = 'discrete';
   console.log("channelCount: " + channelCount);
+
   context.audioWorklet.addModule('panX.js').then(() => {
     let oscillator = new OscillatorNode(context);
     oscillator.type = "sawtooth";
+
     let panX = new AudioWorkletNode(context, 'panX', {
       channelCount: channelCount,
       channelCountMode: 'explicit',
@@ -45,9 +47,6 @@
     //master gain node to controll overall volume
     let gainNode = new GainNode(context);
     gainNode.gain.value = .07;
-
-    //channel merger to connect dynamically added sounds
-    let merger = context.createChannelMerger(channelCount);
 
     oscillator.connect(panX).connect(gainNode).connect(context.destination);
     oscillator.start();
@@ -75,7 +74,6 @@
 
     environment.start();
 
-
     //sounds.js
     playSynth = function () {
       sounds.playSynth();
@@ -86,22 +84,20 @@
     }
 
     pan2 = function () {
-      var synth = flock.synth({
-        synthDef: {
-          id: "synth",              
-          ugen: "flock.ugen.sinOsc",   
-          freq: 440,
-          mul: {
-            id: "mod",
+
+      var panSynthDef = flock.synth({
+        synthDef:
+        {
+          id: "panner",
+          ugen: "flock.ugen.pan2",
+          pan: 0,
+          source: {
             ugen: "flock.ugen.sinOsc",
-            freq: 1.0
+            freq: 440
           }
-        },
-        addToEnvironment: false
+        }
       });
-      synth.set("synth.freq", 900);
-      synth.play();
-    }
+    }//pan2
 
     changePan = function () {
 
