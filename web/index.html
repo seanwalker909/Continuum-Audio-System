@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 
-<input class="pan-control" type="range" min="0" max=".99999" step=".0015" value="0" oninput="updateSlider(this.value)">
+<input class="pan-control" type="range" min="0" max=".99999" step=".00015" value="0" oninput="updateSlider(this.value)">
 <span class="gain-value">0</span>
 <button onclick="playSynth()">play synth</button>
 <button onclick="playAudioFile()">play audio file</button>
@@ -12,7 +12,10 @@
 
 <script src="/bower_components/osc.js/dist/osc-browser.min.js"></script>
 <script src="/bower_components/flocking/dist/flocking-all.js"></script>
-<script src="/sounds.js"></script>
+
+<audio controls="">  
+  <source src="panX test.wav" type="audio/ogg">
+</audio>
 
 <script>
 
@@ -35,9 +38,14 @@
   console.log("channelCount: " + channelCount);
 
   context.audioWorklet.addModule('panX.js').then(() => {
+<<<<<<< HEAD
     let oscillator = new OscillatorNode(context);
     oscillator.type = "sawtooth";
 
+=======
+    var myAudio = document.querySelector('audio');
+    var source = context.createMediaElementSource(myAudio);
+>>>>>>> 08d8a497804753be77aad78105c3c100e07c9009
     let panX = new AudioWorkletNode(context, 'panX', {
       channelCount: channelCount,
       channelCountMode: 'explicit',
@@ -46,8 +54,9 @@
 
     //master gain node to controll overall volume
     let gainNode = new GainNode(context);
-    gainNode.gain.value = .07;
+    gainNode.gain.value = .34;
 
+<<<<<<< HEAD
     oscillator.connect(panX).connect(gainNode).connect(context.destination);
     oscillator.start();
     let pan = panX.parameters.get('gain');
@@ -103,6 +112,15 @@
 
     }
 
+=======
+    //channel merger to connect dynamically added sounds
+    let merger = context.createChannelMerger(channelCount);
+    source.connect(panX).connect(gainNode).connect(context.destination);
+    let pan = panX.parameters.get('panAudioParam');
+    updateSlider = function (value) {
+      pan.setTargetAtTime(value, context.currentTime, .015);
+    }
+>>>>>>> 08d8a497804753be77aad78105c3c100e07c9009
   }); //promise
 </script>
 
