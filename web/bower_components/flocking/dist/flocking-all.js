@@ -34669,66 +34669,103 @@ var fluid = fluid || require("infusion"),
      *   source: the source (mono) unit signal
      *   pan: a value between -1 (hard left) and 1 (hard right)
      */
-    flock.ugen.pan2 = function (inputs, output, options) {
-        var that = flock.ugen(inputs, output, options);
+	flock.ugen.pan2 = function (inputs, output, options) {
+		var that = flock.ugen(inputs, output, options);
+		that.gen = function (numSamps) {
 
-        that.gen = function (numSamps) {
-            var m = that.model,
-                outputs = that.output,
-                left = outputs[0],
-                right = outputs[1],
-                inputs = that.inputs,
-                source = inputs.source.output,
-                pan = inputs.pan.output,
-                i,
-                j,
-                sourceVal,
-                panVal;
+			var outputs = that.output;
+			var inputs = that.inputs;
+			var pan = inputs.pan.output;
+			var speaker, nextSpeaker;
+			var panFromZeroToOne = (pan[0] + +1.0) / 2;
+			//console.log("panFromZeroToOne " + panFromZeroToOne);
+			var lastSpeaker = false;
+			if(pan[0] == -1) //can't mod by zero
+			{
+				speaker = 0;
+				nextSpeaker = 1;
+			}
+			else
+			{
+				var rangePerSpeaker = 1.0 / outputs.length;
+				var x = panFromZeroToOne % rangePerSpeaker;
+				speaker = Math.floor(panFromZeroToOne * outputs.length);
+				nextSpeaker = speaker + 1;
+				// if(speaker == outputs.length) //at the last speaker
+				// {
+				// 	nextSpeaker = speaker;
+				// 	speaker = speaker - 1;
+				// 	lastSpeaker = true;
+				// }
+			}
 
-            for (i = 0, j = 0; i < numSamps; i++, j += m.strides.pan) {
-                sourceVal = source[i];
-                panVal = pan[j] * 0.5 + 0.5;
+			//console.log("speaker: " + speaker + " next speaker: " + nextSpeaker + " pan: " + pan);
+			var m = that.model,
+				left = outputs[speaker],
+				right = outputs[nextSpeaker],
+				source = inputs.source.output,
+				i,
+				j,
+				sourceVal,
+				panVal;
 
-                // TODO: Replace this with a lookup table.
-                right[i] = sourceVal * Math.sin(panVal * flock.HALFPI);
-                left[i] = sourceVal * Math.cos(panVal * flock.HALFPI);
-            }
+			if (!lastSpeaker) {
+				for (i = 0, j = 0; i < numSamps; i++ , j += m.strides.pan) {
+					sourceVal = source[i];
+					panVal = pan[j] * 0.5 + 0.5;
 
-            // TODO: Add multichannel support for mul/add.
-            var lastIdx = numSamps - 1;
-            m.value[0] = outputs[0][lastIdx];
-            m.value[1] = outputs[1][lastIdx];
-        };
+					// TODO: Replace this with a lookup table.
+					right[i] = sourceVal * Math.sin(panVal * flock.HALFPI);
+					left[i] = sourceVal * Math.cos(panVal * flock.HALFPI);
+				}
+			}
+			// else{
+			// 	for (i = 0, j = 0; i < numSamps; i++ , j += m.strides.pan) {
+			// 		sourceVal = source[i];
+			// 		panVal = pan[j] * 0.5 + 0.5;
 
-        that.init = function () {
-            that.onInputChanged();
-            that.model.unscaledValue = that.model.value;
-        };
+			// 		// TODO: Replace this with a lookup table.
+			// 		//right[i] = sourceVal * Math.sin(panVal * flock.HALFPI);
+			// 		left[i] = sourceVal * Math.cos(panVal * flock.HALFPI);
+			// 	}
+			// 	lastSpeaker = false;
+			// }
 
-        that.init();
-        return that;
-    };
+			// TODO: Add multichannel support for mul/add.
+			var lastIdx = numSamps - 1;
+			m.value[0] = outputs[0][lastIdx];
+			m.value[1] = outputs[1][lastIdx];
+		};
 
-    flock.ugenDefaults("flock.ugen.pan2", {
-        rate: "audio",
+		that.init = function () {
+			that.onInputChanged();
+			that.model.unscaledValue = that.model.value;
+		};
 
-        inputs: {
-            source: null,
-            pan: 0 // -1 (hard left)..0 (centre)..1 (hard right)
-        },
+		that.init();
+		return that;
+	};
 
-        ugenOptions: {
-            model: {
-                unscaledValue: [0.0, 0.0],
-                value: [0.0, 0.0]
-            },
-            tags: ["flock.ugen.multiChannelOutput"],
-            strideInputs: [
-                "pan"
-            ],
-            numOutputs: 2
-        }
-    });
+	flock.ugenDefaults("flock.ugen.pan2", {
+		rate: "audio",
+
+		inputs: {
+			source: null,
+			pan: 0 // -1 (hard left)..0 (centre)..1 (hard right)
+		},
+
+		ugenOptions: {
+			model: {
+				unscaledValue: [0.0, 0.0],
+				value: [0.0, 0.0]
+			},
+			tags: ["flock.ugen.multiChannelOutput"],
+			strideInputs: [
+				"pan"
+			],
+			numOutputs: 18
+		}
+	});
 
 }());
 ;/*
@@ -34748,40 +34785,40 @@ var fluid = fluid || require("infusion"),
     funcscope: false*/
 
 var fluid = fluid || require("infusion"),
-    flock = fluid.registerNamespace("flock");
+	flock = fluid.registerNamespace("flock");
 
 (function () {
-    "use strict";
+	"use strict";
 
-    flock.ugen.osc = function (inputs, output, options) {
-        var that = flock.ugen(inputs, output, options);
+	flock.ugen.osc = function (inputs, output, options) {
+		var that = flock.ugen(inputs, output, options);
 
-        that.gen = function (numSamps) {
-            var m = that.model,
-                inputs = that.inputs,
-                freq = inputs.freq.output,
-                phaseOffset = inputs.phase.output,
-                table = inputs.table,
-                tableLen = m.tableLen,
-                tableIncHz = m.tableIncHz,
-                tableIncRad = m.tableIncRad,
-                out = that.output,
-                phase = m.phase,
-                i,
-                j,
-                k,
-                idx,
-                val;
+		that.gen = function (numSamps) {
+			var m = that.model,
+				inputs = that.inputs,
+				freq = inputs.freq.output,
+				phaseOffset = inputs.phase.output,
+				table = inputs.table,
+				tableLen = m.tableLen,
+				tableIncHz = m.tableIncHz,
+				tableIncRad = m.tableIncRad,
+				out = that.output,
+				phase = m.phase,
+				i,
+				j,
+				k,
+				idx,
+				val;
 
-            for (i = 0, j = 0, k = 0; i < numSamps; i++, j += m.strides.phase, k += m.strides.freq) {
-                idx = phase + phaseOffset[j] * tableIncRad;
-                if (idx >= tableLen) {
-                    idx -= tableLen;
-                } else if (idx < 0) {
-                    idx += tableLen;
-                }
-                out[i] = val = that.interpolate(idx, table);
-                phase += freq[k] * tableIncHz;
+			for (i = 0, j = 0, k = 0; i < numSamps; i++ , j += m.strides.phase, k += m.strides.freq) {
+				idx = phase + phaseOffset[j] * tableIncRad;
+				if (idx >= tableLen) {
+					idx -= tableLen;
+				} else if (idx < 0) {
+					idx += tableLen;
+				}
+				out[i] = val = that.interpolate(idx, table);
+				phase += freq[k] * tableIncHz;
                 if (phase >= tableLen) {
                     phase -= tableLen;
                 } else if (phase < 0) {

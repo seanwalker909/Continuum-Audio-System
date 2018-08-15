@@ -38,14 +38,9 @@
   console.log("channelCount: " + channelCount);
 
   context.audioWorklet.addModule('panX.js').then(() => {
-<<<<<<< HEAD
     let oscillator = new OscillatorNode(context);
     oscillator.type = "sawtooth";
 
-=======
-    var myAudio = document.querySelector('audio');
-    var source = context.createMediaElementSource(myAudio);
->>>>>>> 08d8a497804753be77aad78105c3c100e07c9009
     let panX = new AudioWorkletNode(context, 'panX', {
       channelCount: channelCount,
       channelCountMode: 'explicit',
@@ -56,7 +51,6 @@
     let gainNode = new GainNode(context);
     gainNode.gain.value = .34;
 
-<<<<<<< HEAD
     oscillator.connect(panX).connect(gainNode).connect(context.destination);
     oscillator.start();
     let pan = panX.parameters.get('gain');
@@ -77,11 +71,12 @@
 
     //flocking
     var environment = flock.init({
-      chans: 2,
-      outputs: 2
+      chans: channelCount,
+      outputs: channelCount
     });
 
     environment.start();
+    var panSynthDef;
 
     //sounds.js
     playSynth = function () {
@@ -94,33 +89,30 @@
 
     pan2 = function () {
 
-      var panSynthDef = flock.synth({
+      panSynthDef = flock.synth({
         synthDef:
         {
           id: "panner",
           ugen: "flock.ugen.pan2",
-          pan: 0,
+          pan: -1.0,
           source: {
             ugen: "flock.ugen.sinOsc",
-            freq: 440
+            freq: 440,
+            mul: 0.06
+          },
+          options:
+          {
+            numOutputs: channelCount
           }
         }
       });
+
     }//pan2
 
     changePan = function () {
-
+      panSynthDef.set("panner.pan", -0.1);
     }
 
-=======
-    //channel merger to connect dynamically added sounds
-    let merger = context.createChannelMerger(channelCount);
-    source.connect(panX).connect(gainNode).connect(context.destination);
-    let pan = panX.parameters.get('panAudioParam');
-    updateSlider = function (value) {
-      pan.setTargetAtTime(value, context.currentTime, .015);
-    }
->>>>>>> 08d8a497804753be77aad78105c3c100e07c9009
   }); //promise
 </script>
 
