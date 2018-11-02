@@ -13,7 +13,7 @@
 <script src="/bower_components/osc.js/dist/osc-browser.min.js"></script>
 <script src="/bower_components/flocking/dist/flocking-all.js"></script>
 
-<audio controls="">  
+<audio controls="">
   <source src="panX test.wav" type="audio/ogg">
 </audio>
 
@@ -42,77 +42,28 @@
     oscillator.type = "sawtooth";
 
     let panX = new AudioWorkletNode(context, 'panX', {
-      channelCount: channelCount,
+      channelCount: 1,
+      numberOfInputs: channelCount,
+      numberOfOutputs: channelCount,
+      outputChannelCount: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       channelCountMode: 'explicit',
-      channelInterpretation: 'discrete',
+      channelInterpretation: 'speakers'
     });
 
     //master gain node to controll overall volume
     let gainNode = new GainNode(context);
     gainNode.gain.value = .34;
 
-    oscillator.connect(panX).connect(gainNode).connect(context.destination);
-    oscillator.start();
+    var myAudio = document.querySelector('audio');
+    var source = context.createMediaElementSource(myAudio);
+    source.connect(panX).connect(gainNode).connect(context.destination);
     let pan = panX.parameters.get('gain');
+    let left = panX.parameters.get('leftChannel');
+    let right = panX.parameters.get('rightChannel');
     updateSlider = function (value) {
       pan.setTargetAtTime(value, context.currentTime, .015);
+      left.setTargetAtTime(value, context.currentTime, .015);
     }
-
-    //osc
-    var oscPort = new osc.WebSocketPort({
-      url: "ws://localhost:8081", // URL to your Web Socket server.
-      metadata: true
-    });
-    oscPort.open();
-    oscPort.on("message", function (oscMsg) {
-      console.log("An OSC message just arrived!", oscMsg.args[0].value);
-      pan.setTargetAtTime(oscMsg.args[0].value, context.currentTime, .015);
-    });
-
-    //flocking
-    var environment = flock.init({
-      chans: channelCount,
-      outputs: channelCount
-    });
-
-    environment.start();
-    var panSynthDef;
-
-    //sounds.js
-    playSynth = function () {
-      sounds.playSynth();
-    }
-
-    playAudioFile = function () {
-      sounds.playAudioFile();
-    }
-
-    pan2 = function () {
-
-      panSynthDef = flock.synth({
-        synthDef:
-        {
-          id: "panner",
-          ugen: "flock.ugen.pan2",
-          pan: -1.0,
-          source: {
-            ugen: "flock.ugen.sinOsc",
-            freq: 440,
-            mul: 0.06
-          },
-          options:
-          {
-            numOutputs: channelCount
-          }
-        }
-      });
-
-    }//pan2
-
-    changePan = function () {
-      panSynthDef.set("panner.pan", -0.1);
-    }
-
   }); //promise
 </script>
 
